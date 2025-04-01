@@ -1,9 +1,7 @@
-username = "Randall"
-password = "correcthorsebatterystaple" #if you know, you are an awesome person
-inUsername = input("Type username: ")
-inPassword = input("Type password: ")
-while ((inUsername == username) and (inPassword == password)) is False:
-    print("You were incorrect.")
-    inUsername = input("Type username: ")
-    inPassword = input("Type password: ")
-print("You (finally) got them correct! Commencing username + password scrambling...")
+numList = [5,4,6,10,222,67,0,42]
+for i in numList:
+    if i % 2 == 1:
+        continue
+    if i > 10:
+        break
+    print(i)
