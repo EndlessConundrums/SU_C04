@@ -13,14 +13,19 @@
 #print(triArea)
 def encryptor(plaintext):
     alphabet = "abcdefghijklmnopqrstuvwxyz"
-    caeser = "fghijklmnopqrstuvwxyzabcde"
+    caeser = "nopqrstuvwxyzabcdefghijklm"
     text = list(plaintext)
     print(text)
     for i in range(len(text)):
+        print("Moved on to next letter")
         for j in range(len(alphabet)):
             if alphabet[j] == text[i]:
                 text[i] = caeser[j]
+                print("Modified letter")
+                break
     return text
 sample = "hello world"
-print(encryptor(sample))
-
+sample = encryptor(sample)
+print(sample)
+sample = encryptor(sample)
+print(sample)
