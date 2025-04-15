@@ -9,7 +9,7 @@
 
 #print(listContraption(sillyList, numberModifier))
 wordList = "HERE AT BVR HAX WE WANT THE MOST WORKING AND THE LEAST STANDING POSSIBLE"
-#This sentence from the latest BVR HAX 
+#This sentence from the latest BVR HAX propaganda poster
 def listCombobulator(spacer):
     def wordCombobulator(string):
         string = string.split(" ")
