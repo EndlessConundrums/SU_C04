@@ -13,6 +13,11 @@ def gravityEquation(mass1, mass2):
     gforceY2 = G * ((mass1.getMass() * mass2.getMass())/(yDist ** 2)) # newton.
     gforceX1 = (G * ((mass1.getMass() * mass2.getMass())/(xDist ** 2))) * (-1)
     gforceY1 = (G * ((mass1.getMass() * mass2.getMass())/(yDist ** 2))) * (-1)
+    print("G-forces: ")
+    print(gforceX1)
+    print(gforceY1) # the issue is that they slingshot around each other, but placing them into an orbit should solve it
+    print(gforceX2)
+    print(gforceY2) # debugging
     accel1X = (gforceX1 / mass1.getMass()) # also newton
     accel1Y = (gforceY1 / mass1.getMass()) # thanks newton for making important physics equations and also calculus
     accel2X = (gforceX2 / mass2.getMass())
@@ -21,13 +26,13 @@ def gravityEquation(mass1, mass2):
     mass2.accelerate(accel2X, accel2Y)
 
 class Body:
-    def __init__(self, mass, xPos, yPos):
+    def __init__(self, mass, xPos, yPos, xVel, yVel):
         self.mass = mass
         self.x = xPos
         self.y = yPos
-        self.velX = 0
-        self.velY = 0
-        self.radius = self.mass / 10
+        self.velX = xVel
+        self.velY = yVel
+        self.radius = self.mass / 5
     def getX(self):
         return self.x
     def getY(self):
@@ -43,8 +48,8 @@ class Body:
         self.x += self.velX
         self.y += self.velY
 
-Bogol = Body(175, 100, 100)
-Grumbill = Body(200, -250, -230)
+Bogol = Body(175, 100, 100, 0, 0)
+Grumbill = Body(200, -250, -230, 0, 0)
 
 while True:
     print("Starting loop...")
