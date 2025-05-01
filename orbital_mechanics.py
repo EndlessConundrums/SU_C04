@@ -1,14 +1,22 @@
 import math
-G = 1 # dummy value; must change later (but also don't use the actual value for ease of programming)
+import time
+G = 3 # dummy value; must change later (but also don't use the actual value for ease of programming)
+def getDistance(mass1, mass2):
+    xDist = mass1.getX() - mass2.getX()
+    yDist = mass1.getY() - mass2.getY()
+    totalDist = math.sqrt((xDist ** 2) + (yDist ** 2))
+    return totalDist
 def gravityEquation(mass1, mass2):
     xDist = mass1.getX() - mass2.getX()
     yDist = mass1.getY() - mass2.getY()
-    gforceX = G * ((mass1.getMass() * mass2.getMass())/(xDist ** 2)) # newton?
-    gforceY = G * ((mass1.getMass() * mass2.getMass())/(yDist ** 2)) # newton.
-    accel1X = (gforceX / mass1.getMass())
-    accel1Y = (gforceY / mass1.getMass())
-    accel2X = (gforceX / mass2.getMass())
-    accel2Y = (gforceY / mass2.getMass())
+    gforceX2 = G * ((mass1.getMass() * mass2.getMass())/(xDist ** 2)) # newton?
+    gforceY2 = G * ((mass1.getMass() * mass2.getMass())/(yDist ** 2)) # newton.
+    gforceX1 = (G * ((mass1.getMass() * mass2.getMass())/(xDist ** 2))) * (-1)
+    gforceY1 = (G * ((mass1.getMass() * mass2.getMass())/(yDist ** 2))) * (-1)
+    accel1X = (gforceX1 / mass1.getMass()) # also newton
+    accel1Y = (gforceY1 / mass1.getMass()) # thanks newton for making important physics equations and also calculus
+    accel2X = (gforceX2 / mass2.getMass())
+    accel2Y = (gforceY2 / mass2.getMass())
     mass1.accelerate(accel1X, accel1Y)
     mass2.accelerate(accel2X, accel2Y)
 
@@ -19,12 +27,15 @@ class Body:
         self.y = yPos
         self.velX = 0
         self.velY = 0
+        self.radius = self.mass / 10
     def getX(self):
         return self.x
     def getY(self):
         return self.y
     def getMass(self):
         return self.mass
+    def getRadius(self):
+        return self.radius
     def accelerate(self, accelX, accelY):
         self.velX += accelX
         self.velY += accelY
@@ -37,3 +48,18 @@ Grumbill = Body(200, -250, -230)
 
 while True:
     print("Starting loop...")
+    gravityEquation(Bogol, Grumbill)
+    Bogol.update()
+    Grumbill.update()
+    if getDistance(Bogol, Grumbill) < (Bogol.getRadius() + Grumbill.getRadius()):
+        print("Collision detected!")
+        break
+    print("Bogol position:")
+    print(Bogol.getX())
+    print(Bogol.getY())
+    print("Grumbill position:")
+    print(Grumbill.getX())
+    print(Grumbill.getY())
+    print("Distance(total):")
+    print(getDistance(Bogol, Grumbill))
+    time.sleep(1)
