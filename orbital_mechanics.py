@@ -1,11 +1,16 @@
 import math
 import time
-G = 3 # dummy value; must change later (but also don't use the actual value for ease of programming)
+G = 0.003 # this is the actual value :D
 def getDistance(mass1, mass2):
     xDist = mass1.getX() - mass2.getX()
     yDist = mass1.getY() - mass2.getY()
     totalDist = math.sqrt((xDist ** 2) + (yDist ** 2))
     return totalDist
+def planetCollision(mass1, mass2):
+    if getDistance(mass1, mass2) < (mass1.getRadius() + mass2.getRadius()):
+        return True
+    else:
+        return False
 def gravityEquation(mass1, mass2):
     xDist = mass1.getX() - mass2.getX()
     yDist = mass1.getY() - mass2.getY()
@@ -13,26 +18,20 @@ def gravityEquation(mass1, mass2):
     gforceY2 = G * ((mass1.getMass() * mass2.getMass())/(yDist ** 2)) # newton.
     gforceX1 = (G * ((mass1.getMass() * mass2.getMass())/(xDist ** 2))) * (-1)
     gforceY1 = (G * ((mass1.getMass() * mass2.getMass())/(yDist ** 2))) * (-1)
-    print("G-forces: ")
-    print(gforceX1)
-    print(gforceY1) # the issue is that they slingshot around each other, but placing them into an orbit should solve it
-    print(gforceX2)
-    print(gforceY2) # debugging
-    accel1X = (gforceX1 / mass1.getMass()) # also newton
-    accel1Y = (gforceY1 / mass1.getMass()) # thanks newton for making important physics equations and also calculus
-    accel2X = (gforceX2 / mass2.getMass())
+    accel1X = (gforceX1 / mass1.getMass()) #also newton
+    accel1Y = (gforceY1 / mass1.getMass()) #thanks newton for making important physics equations and also calculus
+    accel2X = (gforceX2 / mass2.getMass()) #or was it lebneiz?
     accel2Y = (gforceY2 / mass2.getMass())
     mass1.accelerate(accel1X, accel1Y)
     mass2.accelerate(accel2X, accel2Y)
-
 class Body:
-    def __init__(self, mass, xPos, yPos, xVel, yVel):
+    def __init__(self, mass, xPos, yPos, xVel, yVel, rad):
         self.mass = mass
         self.x = xPos
         self.y = yPos
         self.velX = xVel
         self.velY = yVel
-        self.radius = self.mass / 5
+        self.radius = rad
     def getX(self):
         return self.x
     def getY(self):
@@ -48,15 +47,43 @@ class Body:
         self.x += self.velX
         self.y += self.velY
 
-Bogol = Body(175, 100, 100, 0, 0)
-Grumbill = Body(200, -250, -230, 0, 0)
+class Ship(Body):
+    def __init__(self, xPos, yPos):
+        self.mass = 0.01
+        self.x = xPos
+        self.y = yPos
+        self.velX = 0
+        self.velY = 0
+        self.radius = 0.1
+    def move(self, dirX, dirY):
+        self.velX += dirX
+        self.velY += dirY
+    def getVelX(self):
+        return self.velX
+    def getVelY(self):
+        return self.velY
+    def left(self):
+        self.move(-1, 0)
+    def right(self):
+        self.move(1, 0)
+    def up(self):
+        self.move(0, 1)
+    def down(self):
+        self.move(0, -1)
+Bogol = Body(175000, 100, 100, -1, 1, 17)
+Grumbill = Body(200000, -250, -230, 1, -1, 20)
+Spiker = Ship(10, 300)
 
 while True:
     print("Starting loop...")
     gravityEquation(Bogol, Grumbill)
+    gravityEquation(Bogol, Spiker)
+    gravityEquation(Grumbill, Spiker)
+    Spiker.down()
     Bogol.update()
     Grumbill.update()
-    if getDistance(Bogol, Grumbill) < (Bogol.getRadius() + Grumbill.getRadius()):
+    Spiker.update()
+    if (planetCollision(Bogol, Grumbill)) or (planetCollision(Bogol, Spiker)) or (planetCollision(Grumbill, Spiker)):
         print("Collision detected!")
         break
     print("Bogol position:")
@@ -65,6 +92,14 @@ while True:
     print("Grumbill position:")
     print(Grumbill.getX())
     print(Grumbill.getY())
+    print("Spiker position:")
+    print(Spiker.getX())
+    print(Spiker.getY())
+    print("Spiker velocity:")
+    print(Spiker.getVelX())
+    print(Spiker.getVelY())
     print("Distance(total):")
-    print(getDistance(Bogol, Grumbill))
-    time.sleep(1)
+    print(str(getDistance(Bogol, Grumbill)) + "(Bogol/Grumbill)")
+    print(str(getDistance(Bogol, Spiker)) + "(Bogol/Spiker)")
+    print(str(getDistance(Grumbill, Spiker)) + "(Spiker/Grumbill)")
+    time.sleep(2)
