@@ -9,34 +9,35 @@ def getDistVector(mass1, mass2):
     return totalDist
 def planetCollision():
     for i in range(len(bodyList)):
-        for j in range(len(bodyList) - 1):
+        for j in range(len(bodyList)):
             if bodyList[i] == bodyList[j]:
-                break
-            mass1 = bodyList[i]
-            mass2 = bodyList[j]
-            if np.linalg.norm(getDistVector(mass1, mass2)) < (mass1.getRadius() + mass2.getRadius()):
-                return True
+                continue
+            else:
+                mass1 = bodyList[i]
+                mass2 = bodyList[j]
+                if np.linalg.norm(getDistVector(mass1, mass2)) < (mass1.getRadius() + mass2.getRadius()):
+                    print(np.linalg.norm(getDistVector(mass1, mass2)))
+                    return True
     return False
 def gravityEquation(mass1):
     gVector1 = np.array([0., 0.])
     for i in (range(len(bodyList))):
         if bodyList[i] == mass1:
-            break
+            continue
         else:
             mass2 = bodyList[i]
             totalDist = getDistVector(mass1, mass2)
             mag = np.linalg.norm(totalDist)
-            gForce1 = G * ((mass1.getMass() * mass2.getMass()) / (mag ** 2))
+            gForce1 = (G * ((mass1.getMass() * mass2.getMass()) / (mag ** 2))) * -1
             unitForce = totalDist / mag
-            gVector1[0] += unitForce[0] * gForce1
-            gVector1[1] += unitForce[1] * gForce1
-            print(gForce1)
+            gVector1 += unitForce * gForce1
+            gVector1 = gVector1 / mass1.getMass()
         mass1.accelerate(gVector1)
 class Body:
-    def __init__(self, mass, xPos, yPos, xVel, yVel, rad, name):
+    def __init__(self, mass, position, velocity, rad, name):
         self.mass = mass
-        self.pos = np.array([xPos, yPos])
-        self.vel = np.array([xVel, yVel])
+        self.pos = position
+        self.vel = velocity
         self.radius = rad
         self.name = name
     def getX(self):
@@ -55,44 +56,43 @@ class Body:
         self.pos += self.vel
 
 class Ship(Body):
-    def __init__(self, xPos, yPos, name):
+    def __init__(self, position, name):
         self.mass = 0.01
-        self.pos = np.array([xPos, yPos])
+        self.pos = position
         self.vel = np.array([0., 0.])
         self.radius = 0.1
         self.name = name
-    def move(self, dirX, dirY):
-        self.vel[0] += dirX
-        self.vel[1] += dirY
+    def move(self, direction):
+        self.vel[0] += direction
     def getVelX(self):
         return self.velX
     def getVelY(self):
         return self.velY
     def left(self):
-        self.move(-1, 0)
+        self.move([-1, 0])
     def right(self):
-        self.move(1, 0)
+        self.move([1, 0])
     def up(self):
-        self.move(0, 1)
+        self.move([0, 1])
     def down(self):
-        self.move(0, -1)
-Bogol = Body(175000., 100., 100., -1., 1., 17, "Bogol")
-Grumbill = Body(200000., -250., -230., 1., -1., 20, "Grumbill")
-Spiker = Ship(10., 300., "Spiker")
+        self.move([0, -1])
+Bogol = Body(175000., np.array([100., 100.]), np.array([0., 0.]), 17., "Bogol")
+Grumbill = Body(200000., np.array([-250., -230.]), np.array([0., 0.]), 20., "Grumbill")
+Spiker = Ship(np.array([10., 300.]), "Spiker")
 bodyList = [Bogol, Grumbill, Spiker]
-counter = 0
-while True:
+
+def mainLoop():
     print("Starting loop...")
     for i in range(len(bodyList)):
         gravityEquation(bodyList[i])
+    for i in range(len(bodyList)):
         bodyList[i].update()
         print(bodyList[i].getName() + " position:")
         print(bodyList[i].getX())
         print(bodyList[i].getY())
     if planetCollision():
         print("Collision detected!")
-        break
-    if counter == 2:
-        break
-    time.sleep(2)
-    counter += 1
+
+for i in range(2):
+    mainLoop()
+    time.sleep(1)
