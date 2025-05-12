@@ -1,4 +1,3 @@
-import math
 import time
 import numpy as np
 G = 0.003 # this is the actual value :D
@@ -69,15 +68,15 @@ class Ship(Body):
     def getVelY(self):
         return self.velY
     def left(self):
-        self.move([-1, 0])
+        self.move(np.array([-1, 0]))
     def right(self):
-        self.move([1, 0])
+        self.move(np.array([1, 0]))
     def up(self):
-        self.move([0, 1])
+        self.move(np.array([0, 1]))
     def down(self):
-        self.move([0, -1])
-Bogol = Body(175000., np.array([100., 100.]), np.array([0., 0.]), 17., "Bogol")
-Grumbill = Body(200000., np.array([-250., -230.]), np.array([0., 0.]), 20., "Grumbill")
+        self.move(np.array([0, -1]))
+Bogol = Body(175000., np.array([100., 100.]), np.array([-1., 0.]), 17., "Bogol")
+Grumbill = Body(200000., np.array([-250., -230.]), np.array([1., 0.]), 20., "Grumbill")
 Spiker = Ship(np.array([10., 300.]), "Spiker")
 bodyList = [Bogol, Grumbill, Spiker]
 
