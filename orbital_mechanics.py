@@ -1,5 +1,9 @@
 import time
 import numpy as np
+import gymnasium as gym
+from gymnasium import spaces
+from stable_baselines3 import DQN
+from stable_baselines3.common.env_checker import check_env
 G = 0.003 # this is the actual value :D
 def getDistVector(mass1, mass2):
     xDist = mass1.getX() - mass2.getX()
@@ -43,6 +47,14 @@ class Body:
         return self.pos[0]
     def getY(self):
         return self.pos[1]
+    def getPos(self):
+        return self.pos
+    def getVelX(self):
+        return self.vel[0]
+    def getVelY(self):
+        return self.vel[1]
+    def getVel(self):
+        return self.vel
     def getMass(self):
         return self.mass
     def getRadius(self):
@@ -62,36 +74,81 @@ class Ship(Body):
         self.radius = 0.1
         self.name = name
     def move(self, direction):
-        self.vel[0] += direction
-    def getVelX(self):
-        return self.velX
-    def getVelY(self):
-        return self.velY
+        self.vel += direction
+    def reset(self):
+        self.pos = np.array([np.random.uniform(-1000., 1000.), np.random.uniform(-1000., 1000.)])
     def left(self):
-        self.move(np.array([-1, 0]))
+        self.move(np.array([-0.3, 0.]))
     def right(self):
-        self.move(np.array([1, 0]))
+        self.move(np.array([0.3, 0.]))
     def up(self):
-        self.move(np.array([0, 1]))
+        self.move(np.array([0., 0.3]))
     def down(self):
-        self.move(np.array([0, -1]))
+        self.move(np.array([0., -0.3]))
 Bogol = Body(175000., np.array([100., 100.]), np.array([-1., 0.]), 17., "Bogol")
 Grumbill = Body(200000., np.array([-250., -230.]), np.array([1., 0.]), 20., "Grumbill")
-Spiker = Ship(np.array([10., 300.]), "Spiker")
+Spiker = Ship(np.array([np.random.uniform(-1000., 1000.), np.random.uniform(-1000., 1000.)]), "Spiker")
 bodyList = [Bogol, Grumbill, Spiker]
 
+class WorldEnv(gym.Env):
+    def __init__(self):
+        super(WorldEnv, self) .__init__()
+        self.action_space = spaces.Discrete(4)
+        self.observation_space = spaces.Box(low=-10000, high=10000, shape=(2,), dtype=np.int32)
+        self.state = self._reset()
+    def reset(self, seed=None, options=None):
+        Spiker.reset()
+        self.state = self._reset()
+        return np.array(self.state, dtype=np.int32), {}
+    def step(self, action):
+        distVector = getDistVector(Spiker, Grumbill)
+        distance = np.sqrt((distVector[0] ** 2) + (distVector[1] ** 2))
+        if action == 0: #up
+            Spiker.up()
+        elif action == 1: #right
+            Spiker.right()
+        elif action == 2: #down
+            Spiker.down()
+        elif action == 3: #left
+            Spiker.left()
+        
+        if distance < (Spiker.getRadius() + Grumbill.getRadius()):
+            reward = 100.
+            done = True
+        else:
+            reward = 1 / distance
+            done = False
+        mainLoop()
+        self.state = (Spiker.getX(), Spiker.getY())
+        return np.array(self.state, dtype=np.int32), reward, done, False, {}
+    def _reset(self):
+        return (Spiker.getX(), Spiker.getY())
+    
+
+def costFunction():
+    distVector = getDistVector(Spiker, Grumbill) #Grumbill is the target because it's far away
+    distance = np.linalg.norm(distVector)
+    score = distance * -1
+    return score
 def mainLoop():
-    print("Starting loop...")
     for i in range(len(bodyList)):
         gravityEquation(bodyList[i])
     for i in range(len(bodyList)):
         bodyList[i].update()
-        print(bodyList[i].getName() + " position:")
-        print(bodyList[i].getX())
-        print(bodyList[i].getY())
     if planetCollision():
         print("Collision detected!")
 
-for i in range(2):
-    mainLoop()
-    time.sleep(1)
+env = WorldEnv()
+check_env(env)
+
+model = DQN("MlpPolicy", env, verbose=1)
+model.learn(total_timesteps=10000)
+
+obs, _ = env.reset()
+for _ in range(10):
+    action, _ = model.predict(obs)
+    obs, reward, done, _, _ = env.step(action)
+    print("Action: " + str(action) + ", reward: " + str(reward) + ", current position: " + str(obs))
+    if done:
+        print("Collided with Grumbill!")
+        break
